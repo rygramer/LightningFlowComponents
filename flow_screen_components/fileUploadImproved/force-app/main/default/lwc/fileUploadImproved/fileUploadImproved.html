@@ -8,29 +8,58 @@
                 <template for:each={objFiles} for:item="objFile">
                     <div key={objFile} class="slds-size_12-of-12 slds-small-size_12-of-12 slds-medium-size_12-of-12 slds-large-size_6-of-12 slds-var-p-around_xx-small">
                         <lightning-layout class="slds-grid_vertical-align-center slds-var-p-top_xx-small slds-var-p-bottom_xx-small slds-var-p-left_xx-small slds-var-p-right_small" style="border: 1px solid #d8dde6; border-radius:4px; background-color:#FAFAFA;">
-                            <lightning-layout-item size="11">
+                            <lightning-layout-item size="10">
                                 <div class="slds-media slds-media_center slds-has-flexi-truncate">
                                     <div class="slds-media__figure">
                                         <span class="slds-avatar slds-avatar_medium">
                                             <lightning-icon 
-                                                icon-name={objFile.filetype}
+                                                icon-name={objFile.icon}
                                                 size="medium"
                                                 title="Icon">
                                             </lightning-icon>
                                         </span>
                                     </div>
+                                    <lightning-input
+                                        variant="label-hidden"
+                                        value={objFile.title}
+                                        data-editid={objFile.contentVersionId}
+                                        data-objfile={objFile}
+                                        class="slds-hide"
+                                        onchange={handleNameChange}>
+                                    </lightning-input>
                                     <lightning-tile
                                         label={objFile.name}
                                         onclick={openFile}
-                                        data-docid={objFile.documentId}
+                                        data-documentid={objFile.documentId}
+                                        data-saveid={objFile.contentVersionId}
                                         class="slds-media__body">
                                     </lightning-tile>
                                 </div>
                             </lightning-layout-item>
-                            <lightning-layout-item size="1" class="slds-text-align_right">
+                            <lightning-layout-item size="2" class="slds-text-align_right">
                                 <!-- sldsValidatorIgnoreNextLine -->
                                 <lightning-button-icon
-                                    icon-name="utility:close"
+                                    icon-name="utility:edit"
+                                    aria-hidden="true"
+                                    variant="bare"
+                                    onclick={editName}
+                                    data-contentversionid={objFile.contentVersionId}
+                                    data-saveid={objFile.contentVersionId}>
+                                </lightning-button-icon>
+                                <!-- sldsValidatorIgnoreNextLine -->
+                                <lightning-button-icon
+                                    icon-name="utility:save"
+                                    aria-hidden="true"
+                                    variant="bare"
+                                    onclick={saveName}
+                                    data-contentversionid={objFile.contentVersionId}
+                                    data-objfile={objFile}
+                                    class="slds-hide"
+                                    data-editid={objFile.contentVersionId}>
+                                </lightning-button-icon>
+                                <!-- sldsValidatorIgnoreNextLine -->
+                                <lightning-button-icon
+                                    icon-name="utility:delete"
                                     title="Delete File"
                                     aria-hidden="true"
                                     onclick={deleteDocument}

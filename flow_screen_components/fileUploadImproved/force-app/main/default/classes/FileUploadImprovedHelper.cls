@@ -41,28 +41,23 @@ public without sharing class FileUploadImprovedHelper{
         ContentDocument cd = new ContentDocument(Id=cv.ContentDocumentId);
         delete cd;
     }
-    
-    private static String decrypt(String encodedValue, String encodedKey){
-        Blob key = EncodingUtil.base64Decode(encodedKey);
-        Blob value = EncodingUtil.base64Decode(encodedValue);
-    	Blob decryptedBlob = Crypto.decryptWithManagedIV('AES256', key, value);
-    	String recordId = decryptedBlob.toString();
-        return recordId;
-    }
 
    @AuraEnabled(cacheable = true)
     public static List<objFiles> getExistingFiles(String recordId){
+        Boolean isStandardUser = UserInfo.getUserType() == 'Standard';
         system.debug(recordId);
         Map<Id,objFiles> objFiles = new Map<Id,objFiles>();
         for(ContentDocumentLink link : [SELECT ContentDocumentId, ContentDocument.Title, ContentDocument.FileExtension FROM ContentDocumentLink WHERE LinkedEntityId = :recordId]){
             objFiles files = new objFiles();
             files.name = link.ContentDocument.Title +'.'+ link.ContentDocument.FileExtension;
-            files.documentId = link.ContentDocumentId;
+            if(isStandardUser){
+                files.documentId = link.ContentDocumentId;
+            }
             system.debug(files);
-            objFiles.put(files.documentId,files);
+            objFiles.put(link.ContentDocumentId,files);
         }
-        for(ContentDocument doc : [SELECT Id, (SELECT Id FROM ContentVersions WHERE IsLatest = TRUE) FROM ContentDocument WHERE Id IN :objFiles.keyset()]){
-            objFiles.get(doc.Id).contentVersionId = doc.ContentVersions[0].Id;
+        for(ContentVersion vers : [SELECT Id, ContentDocumentId FROM ContentVersion WHERE ContentDocumentId IN :objFiles.keyset()]){
+            objFiles.get(vers.ContentDocumentId).contentVersionId = vers.Id;
         }
         system.debug(objFiles);
         system.debug(objFiles.values());
@@ -78,5 +73,13 @@ public without sharing class FileUploadImprovedHelper{
 
         @AuraEnabled
         public string contentVersionId;
+    }
+
+    private static String decrypt(String encodedValue, String encodedKey){
+        Blob key = EncodingUtil.base64Decode(encodedKey);
+        Blob value = EncodingUtil.base64Decode(encodedValue);
+    	Blob decryptedBlob = Crypto.decryptWithManagedIV('AES256', key, value);
+    	String recordId = decryptedBlob.toString();
+        return recordId;
     }
 }

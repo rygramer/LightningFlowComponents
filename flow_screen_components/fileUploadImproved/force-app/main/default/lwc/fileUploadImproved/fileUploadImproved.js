@@ -88,19 +88,24 @@ export default class FileUpload extends NavigationMixin(LightningElement) {
     processFiles(files){
         var objFile;
         files.forEach(file => {
-            var filetype;
+            var icon;
             if(this.icon == null){
-                filetype = getIconSpecs(file.name.split('.').pop());
+                icon = getIconSpecs(file.name.split('.').pop());
             }
             else{
-                filetype = this.icon;
+                icon = this.icon;
             }
+            var filetype = file.name.split('.').pop();
+            var title = file.name.replace('.'+filetype,'');
             objFile = {
                 name: file.name,
+                icon: icon,
                 filetype: filetype,
+                title: title,
                 documentId: file.documentId,
                 contentVersionId: file.contentVersionId
             };
+            console.log(objFile);
             this.objFiles.push(objFile);
             this.docIds.push(file.documentId);
             this.versIds.push(file.contentVersionId);
@@ -137,6 +142,94 @@ export default class FileUpload extends NavigationMixin(LightningElement) {
             }
         }
     }
+
+    editName(event){
+        console.log('in edit name');
+        const contentVersionId = event.target.dataset.contentversionid;
+
+        
+        try {
+            this.template.querySelector(`lightning-tile[data-saveid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-input[data-saveid=')
+            console.log(error);
+        }
+        try {
+            this.template.querySelector(`lightning-input[data-editid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-input[data-editid=')
+            console.log(error);
+        }
+        try {
+            this.template.querySelector(`lightning-button-icon[data-editid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-button-icon[data-editid=')
+            console.log(error);
+        }
+        try {
+            this.template.querySelector(`lightning-button-icon[data-saveid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-button-icon[data-saveid=')
+            console.log(error);
+        }
+        
+        try {
+            this.template.querySelector(`lightning-input[data-editid="${contentVersionId}"]`).focus();
+        } catch (error) {
+            console.log('lightning-input[data-editid= focus')
+            console.log(error);
+        }
+        
+    }
+
+    nameChange;
+    handleNameChange(event){
+        this.nameChange = event.target.value;
+    }
+    saveName(event){
+        console.log('in save name');
+        const contentVersionId = event.target.dataset.contentversionid;
+
+        let objFiles = this.objFiles;
+        let nameChangeIndex;
+        for(let i=0; i<objFiles.length; i++){
+            if(contentVersionId === objFiles[i].contentVersionId){
+                nameChangeIndex = i;
+            }
+        }
+
+        objFiles[nameChangeIndex].title = this.nameChange;
+        objFiles[nameChangeIndex].name = objFiles[nameChangeIndex].title+'.'+objFiles[nameChangeIndex].filetype;
+
+        console.log(objFiles);
+
+        this.communicateEvent(this.docIds,this.versIds,this.fileNames,this.objFiles);
+        
+        try {
+            this.template.querySelector(`lightning-tile[data-saveid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-input[data-saveid=')
+            console.log(error);
+        }
+        try {
+            this.template.querySelector(`lightning-input[data-editid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-input[data-editid=')
+            console.log(error);
+        }
+        try {
+            this.template.querySelector(`lightning-button-icon[data-editid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-button-icon[data-editid=')
+            console.log(error);
+        }
+        try {
+            this.template.querySelector(`lightning-button-icon[data-saveid="${contentVersionId}"]`).classList.toggle('slds-hide');
+        } catch (error) {
+            console.log('lightning-button-icon[data-saveid=')
+            console.log(error);
+        }
+    }
     
     deleteDocument(event){
         console.log('documentId - '+event.target.dataset.documentid);
@@ -146,10 +239,12 @@ export default class FileUpload extends NavigationMixin(LightningElement) {
         const contentVersionId = event.target.dataset.contentversionid;
         
         console.log(documentId);
+        
         if(documentId){
-            console.log('in delete docid');
+            console.log('in lwc delete doc');
             deleteRecord(documentId);
         } else {
+            console.log('in apex delete doc')
             deleteContentDoc({versId: contentVersionId});
         }
 
@@ -198,7 +293,7 @@ export default class FileUpload extends NavigationMixin(LightningElement) {
     }
 
     openFile(event) {
-        const docId = event.target.dataset.docid;
+        const documentId = event.target.dataset.documentid;
         event.preventDefault();
         this[NavigationMixin.Navigate]({
             type: 'standard__namedPage',
@@ -206,7 +301,7 @@ export default class FileUpload extends NavigationMixin(LightningElement) {
                 pageName: 'filePreview'
             },
             state: {
-                recordIds: docId
+                recordIds: documentId
             }
         });
     }
