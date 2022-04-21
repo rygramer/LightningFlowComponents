@@ -1,7 +1,7 @@
 {
   "orgName": "unofficialsf",
   "edition": "Developer",
-  "features": ["EnableSetPasswordInApi","AuthorApex"],
+  "features": ["PersonAccounts","EnableSetPasswordInApi","AuthorApex"],
   "settings": {
     "lightningExperienceSettings": {
       "enableS1DesktopEnabled": true
